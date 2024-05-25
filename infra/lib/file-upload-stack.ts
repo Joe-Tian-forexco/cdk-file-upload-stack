@@ -14,18 +14,19 @@ export class FileUploadStack extends cdk.Stack {
 
     const { config } = props;
     const isProduction = config.APP_ENVIRONMENT === "production";
+    console.log("Is Production Environment----->", isProduction);
     const environment = config.APP_ENVIRONMENT;
 
     const s3LogicalId = `ptx-files-s3-cloudformation-${environment}`;
     const s3BucketName = `ptx-files-${environment}`;
-    const roleLogicalId = 'ptx-files-s3-role-cloudformation'
-    const roleName = 'ptx-files-s3-role'
+    const roleLogicalId = "ptx-files-s3-role-cloudformation";
+    const roleName = "ptx-files-s3-role";
 
     // Create an S3 bucket to store PTX files
     const ptxFilesBucket = new s3.Bucket(this, s3LogicalId, {
       bucketName: s3BucketName,
       versioned: true,
-      publicReadAccess: isProduction ? false : true, // TODO: How to access the file with url in the future?
+      publicReadAccess: false, // TODO: How to access the file with url in the future?
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
@@ -34,11 +35,8 @@ export class FileUploadStack extends cdk.Stack {
       roleName: roleName,
       description: "Role for the Lambda function to get presigned URL",
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
-      managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName(
-          "AmazonS3FullAccess"
-        ),
-      ],
     });
+
+    lambdaRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess"));
   }
 }
