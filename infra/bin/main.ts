@@ -5,7 +5,10 @@ import { getConfig } from "../lib/config";
 const config = getConfig();
 const app = new cdk.App();
 
-new FileUploadStack(app, "PTX-S3-Uploader", {
+const environment = config.APP_ENVIRONMENT;
+console.log("Current Environment----->", environment)
+
+new FileUploadStack(app, `PTX-S3-Uploader-${environment}`, {
   env: {
     region: config.REGION,
   },
