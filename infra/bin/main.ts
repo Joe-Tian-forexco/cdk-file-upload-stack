@@ -6,7 +6,6 @@ const config = getConfig();
 const app = new cdk.App();
 
 const environment = config.APP_ENVIRONMENT;
-console.log("Current Environment----->", environment)
 
 new FileUploadStack(app, `PTX-S3-Uploader-${environment}`, {
   env: {
