@@ -44,7 +44,7 @@ export class LauncherStack extends Stack {
     const uploadLambda = new Function(this, lambdaLogicalId, {
       functionName: lambdaName,
       runtime: Runtime.NODEJS_18_X,
-      handler: "upload.handler",
+      handler: "upload.getPresignUrl",
       code: Code.fromAsset(join(__dirname, "../../services")),
       role: lambdaRole,
     });
@@ -53,7 +53,7 @@ export class LauncherStack extends Stack {
 
     // Create API Gateway
     // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2_integrations-readme.html
-    const httpApi = new HttpApi(this, 'HttpApi');
+    const httpApi = new HttpApi(this, apiName);
     httpApi.addRoutes({
       path: '/presigned-url',
       methods: [ HttpMethod.GET ],

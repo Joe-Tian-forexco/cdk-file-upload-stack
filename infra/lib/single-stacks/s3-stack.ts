@@ -1,7 +1,7 @@
 import { Stack, RemovalPolicy } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { Bucket } from "aws-cdk-lib/aws-s3";
-import { AppStackProps } from "./config";
+import { AppStackProps } from "../config";
 
 export class S3Stack extends Stack {
   constructor(scope: Construct, id: string, props: AppStackProps) {

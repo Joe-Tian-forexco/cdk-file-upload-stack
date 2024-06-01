@@ -4,7 +4,7 @@ import { Construct } from "constructs";
 import { Role, ServicePrincipal, ManagedPolicy } from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { join } from "path";
-import { AppStackProps } from "./config";
+import { AppStackProps } from "../config";
 
 interface ApiStackProps extends AppStackProps {
   getPresignedUrlLambda: LambdaIntegration;

@@ -1,7 +1,7 @@
 import { RestApi, LambdaIntegration } from "aws-cdk-lib/aws-apigateway";
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { AppStackProps } from "./config";
+import { AppStackProps } from "../config";
 
 interface ApiStackProps extends AppStackProps {
   getPresignedUrlLambda: LambdaIntegration;
