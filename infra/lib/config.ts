@@ -1,7 +1,12 @@
+import { StackProps } from "aws-cdk-lib";
 import * as dotenv from "dotenv";
-import path = require("path");
+import { resolve } from "path";
 
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
+dotenv.config({ path: resolve(__dirname, "../.env") });
+
+export type AppStackProps = StackProps & {
+  config: Readonly<ConfigProps>;
+};
 
 export type ConfigProps = {
   REGION: string;
