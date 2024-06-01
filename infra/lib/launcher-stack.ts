@@ -2,10 +2,12 @@ import { RemovalPolicy, Stack } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { AppStackProps } from "./config";
 import { Bucket } from "aws-cdk-lib/aws-s3";
-import { LambdaRestApi, LambdaIntegration } from "aws-cdk-lib/aws-apigateway";
+import { Cors, LambdaIntegration, LambdaRestApi, ResourceOptions, RestApi } from "aws-cdk-lib/aws-apigateway";
+import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { ManagedPolicy, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
 import { join } from "path";
+import { HttpApi, HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
 
 export class LauncherStack extends Stack {
   constructor(scope: Construct, id: string, props: AppStackProps) {
@@ -39,7 +41,7 @@ export class LauncherStack extends Stack {
     lambdaRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess"));
 
     // Create lambda function to get presigned URL
-    const fileUploadLambda = new Function(this, lambdaLogicalId, {
+    const uploadLambda = new Function(this, lambdaLogicalId, {
       functionName: lambdaName,
       runtime: Runtime.NODEJS_18_X,
       handler: "upload.handler",
@@ -47,15 +49,15 @@ export class LauncherStack extends Stack {
       role: lambdaRole,
     });
 
-    // Create API Gateway
-    const api = new LambdaRestApi(this, apiLogicalId, {
-      handler: fileUploadLambda,
-      restApiName: apiName,
-      description: "API Gateway for PTX files",
-      deploy: true,
-      proxy: false,
-    });
+  const uploadLambdaIntegration = new HttpLambdaIntegration('fileUploadIntegration',uploadLambda);
 
-    api.root.addResource("upload").addMethod("GET");
+    // Create API Gateway
+    // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2_integrations-readme.html
+    const httpApi = new HttpApi(this, 'HttpApi');
+    httpApi.addRoutes({
+      path: '/presigned-url',
+      methods: [ HttpMethod.GET ],
+      integration: uploadLambdaIntegration,
+    });
   }
 }
