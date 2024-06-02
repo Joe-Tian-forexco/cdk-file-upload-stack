@@ -1,9 +1,9 @@
 import { RemovalPolicy, Stack } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { AppStackProps } from "./config";
-import { Bucket } from "aws-cdk-lib/aws-s3";
+import { Bucket, BucketProps, HttpMethods } from "aws-cdk-lib/aws-s3";
 import { Cors, LambdaIntegration, LambdaRestApi, ResourceOptions, RestApi } from "aws-cdk-lib/aws-apigateway";
-import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
+import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import { ManagedPolicy, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
 import { join } from "path";
@@ -24,12 +24,22 @@ export class LauncherStack extends Stack {
     const apiName = `ptx-files-api-${environment}`;
 
     // Create an S3 bucket to store PTX files
-    const ptxFilesBucket = new Bucket(this, `ptx-files-s3-${environment}`, {
+    const bucketOptions: BucketProps = {
       bucketName: `ptx-files-${environment}`,
       versioned: true,
       publicReadAccess: false, // TODO: check later
       removalPolicy: RemovalPolicy.DESTROY,
-    });
+      cors: [
+        {
+          allowedMethods: [HttpMethods.GET, HttpMethods.PUT, HttpMethods.POST, HttpMethods.DELETE, HttpMethods.HEAD],
+          allowedOrigins: ["*"],
+          allowedHeaders: ["*"],
+          exposedHeaders: [],
+        },
+      ],
+    };
+
+    const ptxFilesBucket = new Bucket(this, `ptx-files-s3-${environment}`, bucketOptions);
 
     // Create an IAM role for the Lambda function
     const lambdaRole = new Role(this, `ptx-files-role-${environment}`, {
@@ -49,14 +59,14 @@ export class LauncherStack extends Stack {
       role: lambdaRole,
     });
 
-  const uploadLambdaIntegration = new HttpLambdaIntegration('fileUploadIntegration',uploadLambda);
+    const uploadLambdaIntegration = new HttpLambdaIntegration("fileUploadIntegration", uploadLambda);
 
     // Create API Gateway
     // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2_integrations-readme.html
     const httpApi = new HttpApi(this, apiName);
     httpApi.addRoutes({
-      path: '/presigned-url',
-      methods: [ HttpMethod.GET ],
+      path: "/presigned-url",
+      methods: [HttpMethod.GET],
       integration: uploadLambdaIntegration,
     });
   }
