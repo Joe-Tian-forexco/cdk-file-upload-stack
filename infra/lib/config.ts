@@ -4,10 +4,11 @@ import { resolve } from "path";
 
 dotenv.config({ path: resolve(__dirname, "../.env") });
 
-export type AppStackProps = StackProps & {
+export interface AppStackProps extends StackProps {
   config: Readonly<ConfigProps>;
-};
+}
 
+// Joe-Note: This helps with managing the env variables in the CDK stack.
 export type ConfigProps = {
   REGION: string;
   APP_ENVIRONMENT: string;

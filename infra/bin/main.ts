@@ -8,6 +8,8 @@ const app = new App();
 const environment = config.APP_ENVIRONMENT;
 
 new LauncherStack(app, `PTX-Uploader-Stack-${environment}`, {
+  stackName: `PTX-Uploader-Stack-${environment}`,
+  description: "PTX Uploader stack",
   env: {
     region: config.REGION,
   },

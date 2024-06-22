@@ -2,7 +2,6 @@ import { RemovalPolicy, Stack } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { AppStackProps } from "./config";
 import { Bucket, BucketProps, HttpMethods } from "aws-cdk-lib/aws-s3";
-import { Cors, LambdaIntegration, LambdaRestApi, ResourceOptions, RestApi } from "aws-cdk-lib/aws-apigateway";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import { ManagedPolicy, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
@@ -14,36 +13,37 @@ export class LauncherStack extends Stack {
     super(scope, id, props);
 
     const { config } = props;
-    const environment = config.APP_ENVIRONMENT;
-    const appLambdaName = config.LAMBDA_NAME;
+    const { APP_ENVIRONMENT, LAMBDA_NAME, AWS_S3_BUCKET_NAME } = config;
 
-    const lambdaLogicalId = `${appLambdaName}-cloudformation-${environment}`;
-    const lambdaName = `${appLambdaName}-${environment}`;
+    const lambdaLogicalId = `${LAMBDA_NAME}-cloudformation-${APP_ENVIRONMENT}`;
+    const lambdaName = `${LAMBDA_NAME}-${APP_ENVIRONMENT}`;
 
-    const apiLogicalId = `ptx-files-api-${environment}`;
-    const apiName = `ptx-files-api-${environment}`;
+    const bucketName = `${AWS_S3_BUCKET_NAME}-${APP_ENVIRONMENT}`;
+
+    const apiLogicalId = `ptx-files-api-${APP_ENVIRONMENT}`;
+    const apiName = `ptx-files-api-${APP_ENVIRONMENT}`;
 
     // Create an S3 bucket to store PTX files
     const bucketOptions: BucketProps = {
-      bucketName: `ptx-files-${environment}`,
+      bucketName: bucketName,
       versioned: true,
       publicReadAccess: false, // TODO: check later
       removalPolicy: RemovalPolicy.DESTROY,
       cors: [
         {
           allowedMethods: [HttpMethods.GET, HttpMethods.PUT, HttpMethods.POST, HttpMethods.DELETE, HttpMethods.HEAD],
-          allowedOrigins: ["*"],
+          allowedOrigins: ["*"], // Note: add 'https://ptxmarkets.com' in the future
           allowedHeaders: ["*"],
           exposedHeaders: [],
         },
       ],
     };
 
-    const ptxFilesBucket = new Bucket(this, `ptx-files-s3-${environment}`, bucketOptions);
+    const ptxFilesBucket = new Bucket(this, `ptx-files-s3-${APP_ENVIRONMENT}`, bucketOptions);
 
     // Create an IAM role for the Lambda function
-    const lambdaRole = new Role(this, `ptx-files-role-${environment}`, {
-      roleName: `ptx-files-role-${environment}`,
+    const lambdaRole = new Role(this, `ptx-files-role-${APP_ENVIRONMENT}`, {
+      roleName: `ptx-files-role-${APP_ENVIRONMENT}`,
       description: "Role for the Lambda function to get presigned URL",
       assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
     });
@@ -55,8 +55,15 @@ export class LauncherStack extends Stack {
       functionName: lambdaName,
       runtime: Runtime.NODEJS_18_X,
       handler: "upload.getPresignUrl",
-      code: Code.fromAsset(join(__dirname, "../../services")),
+      // code: Code.fromAsset(join(__dirname, "../../services")),
+      code: Code.fromAsset(join(__dirname, "../../nestjs-services/Archive.zip")),
       role: lambdaRole,
+      memorySize: 128,
+      environment: config,
+      // environment: {
+      //   BUCKET_NAME: bucketName,
+      // },
+      // initialPolicy: [],
     });
 
     const uploadLambdaIntegration = new HttpLambdaIntegration("fileUploadIntegration", uploadLambda);
