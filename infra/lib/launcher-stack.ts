@@ -1,4 +1,4 @@
-import { RemovalPolicy, Stack } from "aws-cdk-lib";
+import { RemovalPolicy, Stack, aws_apigateway } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { AppStackProps } from "./config";
 import { Bucket, BucketProps, HttpMethods } from "aws-cdk-lib/aws-s3";
@@ -7,6 +7,7 @@ import { ManagedPolicy, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
 import { join } from "path";
 import { HttpApi, HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
+import path = require("path");
 
 export class LauncherStack extends Stack {
   constructor(scope: Construct, id: string, props: AppStackProps) {
@@ -29,6 +30,7 @@ export class LauncherStack extends Stack {
       versioned: true,
       publicReadAccess: false, // TODO: check later
       removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true, // TODO: be careful with this
       cors: [
         {
           allowedMethods: [HttpMethods.GET, HttpMethods.PUT, HttpMethods.POST, HttpMethods.DELETE, HttpMethods.HEAD],
@@ -54,9 +56,11 @@ export class LauncherStack extends Stack {
     const uploadLambda = new Function(this, lambdaLogicalId, {
       functionName: lambdaName,
       runtime: Runtime.NODEJS_18_X,
-      handler: "upload.getPresignUrl",
+      // handler: "upload.getPresignUrl",
       // code: Code.fromAsset(join(__dirname, "../../services")),
-      code: Code.fromAsset(join(__dirname, "../../nestjs-services/Archive.zip")),
+      handler: "dist/lambda.handler",
+      code: Code.fromAsset(join(__dirname, "../../express/Archive.zip")),
+      // code: Code.fromAsset(path.resolve(__dirname, "..", "nestjs-zip/Archive.zip")),
       role: lambdaRole,
       memorySize: 128,
       environment: config,
@@ -70,11 +74,25 @@ export class LauncherStack extends Stack {
 
     // Create API Gateway
     // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigatewayv2_integrations-readme.html
-    const httpApi = new HttpApi(this, apiName);
-    httpApi.addRoutes({
-      path: "/presigned-url",
-      methods: [HttpMethod.GET],
-      integration: uploadLambdaIntegration,
-    });
+
+    // const httpApi = new HttpApi(this, apiName);
+    // httpApi.addRoutes({
+    //   path: "/",
+    //   methods: [HttpMethod.GET],
+    //   integration: uploadLambdaIntegration,
+    // });
+
+    // Create API Gateway
+    const ApiGw = new aws_apigateway.LambdaRestApi(
+      this,
+      apiName,
+      {
+        handler: uploadLambda,
+        restApiName: `rest-api-proxy`,
+        deploy: true,
+        proxy: true,
+        binaryMediaTypes: ["*/*"],
+      }
+    );
   }
 }

@@ -14,6 +14,10 @@ export type ConfigProps = {
   APP_ENVIRONMENT: string;
   AWS_S3_BUCKET_NAME: string;
   LAMBDA_NAME: string;
+  // AWS_ACCESS_KEY: string;
+  // AWS_SECRET_ACCESS_KEY: string;
+  AWS_BUCKET_REGION: string;
+  AWS_BUCKET_NAME: string;
 };
 
 export const getConfig = (): ConfigProps => {
@@ -22,5 +26,9 @@ export const getConfig = (): ConfigProps => {
     APP_ENVIRONMENT: process.env.APP_ENVIRONMENT || "staging",
     AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME || "ptx-files",
     LAMBDA_NAME: process.env.LAMBDA_NAME || "staging",
+    // AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY || "",
+    // AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || "",
+    AWS_BUCKET_REGION: process.env.AWS_BUCKET_REGION || "ap-southeast-2",
+    AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME || "ptx-files",
   };
 };
