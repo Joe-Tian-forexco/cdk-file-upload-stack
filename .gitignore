@@ -5,6 +5,8 @@ node_modules
 /dist
 /zip
 
+# misc
+.DS_Store
 
 
 # CDK asset staging directory
@@ -14,3 +16,4 @@ nestjs-zip
 
 # Environment variables file
 .env
+
