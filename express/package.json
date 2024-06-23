@@ -13,6 +13,8 @@
     "build": "tsc --build"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@aws-sdk/s3-request-presigner": "^3.600.0",
     "@codegenie/serverless-express": "^4.14.1",
     "aws-lambda": "^1.0.7",
     "dotenv": "^16.4.5",

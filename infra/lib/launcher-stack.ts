@@ -6,20 +6,19 @@ import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations
 import { ManagedPolicy, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
 import { join } from "path";
-import { HttpApi, HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
-import path = require("path");
+// import { HttpApi, HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
 
 export class LauncherStack extends Stack {
   constructor(scope: Construct, id: string, props: AppStackProps) {
     super(scope, id, props);
 
     const { config } = props;
-    const { APP_ENVIRONMENT, LAMBDA_NAME, AWS_S3_BUCKET_NAME } = config;
+    const { APP_ENVIRONMENT, LAMBDA_NAME, AWS_BUCKET_NAME } = config;
 
     const lambdaLogicalId = `${LAMBDA_NAME}-cloudformation-${APP_ENVIRONMENT}`;
     const lambdaName = `${LAMBDA_NAME}-${APP_ENVIRONMENT}`;
 
-    const bucketName = `${AWS_S3_BUCKET_NAME}-${APP_ENVIRONMENT}`;
+    const bucketName = `${AWS_BUCKET_NAME}-${APP_ENVIRONMENT}`;
 
     const apiLogicalId = `ptx-files-api-${APP_ENVIRONMENT}`;
     const apiName = `ptx-files-api-${APP_ENVIRONMENT}`;
@@ -56,11 +55,8 @@ export class LauncherStack extends Stack {
     const uploadLambda = new Function(this, lambdaLogicalId, {
       functionName: lambdaName,
       runtime: Runtime.NODEJS_18_X,
-      // handler: "upload.getPresignUrl",
-      // code: Code.fromAsset(join(__dirname, "../../services")),
       handler: "dist/lambda.handler",
       code: Code.fromAsset(join(__dirname, "../../express/zip/Archive.zip")),
-      // code: Code.fromAsset(path.resolve(__dirname, "..", "nestjs-zip/Archive.zip")),
       role: lambdaRole,
       memorySize: 128,
       environment: config,
@@ -85,10 +81,10 @@ export class LauncherStack extends Stack {
     // Create API Gateway
     const ApiGw = new aws_apigateway.LambdaRestApi(
       this,
-      apiName,
+      apiLogicalId,
       {
         handler: uploadLambda,
-        restApiName: `rest-api-proxy`,
+        restApiName: apiName,
         deploy: true,
         proxy: true,
         binaryMediaTypes: ["*/*"],
