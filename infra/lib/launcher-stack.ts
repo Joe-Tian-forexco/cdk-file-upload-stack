@@ -59,7 +59,7 @@ export class LauncherStack extends Stack {
       // handler: "upload.getPresignUrl",
       // code: Code.fromAsset(join(__dirname, "../../services")),
       handler: "dist/lambda.handler",
-      code: Code.fromAsset(join(__dirname, "../../express/Archive.zip")),
+      code: Code.fromAsset(join(__dirname, "../../express/zip/Archive.zip")),
       // code: Code.fromAsset(path.resolve(__dirname, "..", "nestjs-zip/Archive.zip")),
       role: lambdaRole,
       memorySize: 128,

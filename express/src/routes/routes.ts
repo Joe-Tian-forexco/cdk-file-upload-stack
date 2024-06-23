@@ -11,4 +11,12 @@ router.get("/test", (req: Request, res: Response) => {
   }
 });
 
+router.get("/test2", (req: Request, res: Response) => {
+  try {
+    res.send(["express app connected test 2"]);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 export default router;
