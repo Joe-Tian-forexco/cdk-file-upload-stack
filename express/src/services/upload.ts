@@ -1,18 +1,13 @@
 import { Request, Response } from "express-serve-static-core";
-import {
-  S3Client,
-  ListBucketsCommand,
-  PutObjectCommand,
-  Bucket,
-} from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { UploadParams } from "../types/type";
+import { client as s3Client } from "./client";
 
-const s3Client = new S3Client({
-  region: process.env.AWS_BUCKET_REGION || "ap-southeast-2",
-});
-
-export async function getUploadSignedUrl(req: Request<{}, {}, {}, UploadParams>, res: Response) {
+export async function getUploadSignedUrl(
+  req: Request<{}, {}, {}, UploadParams>,
+  res: Response
+) {
   const bucketName = `${process.env.AWS_BUCKET_NAME!}-${process.env.APP_ENVIRONMENT!}`;
   const query = req.query;
 
@@ -40,23 +35,3 @@ export async function getUploadSignedUrl(req: Request<{}, {}, {}, UploadParams>,
     res.send(error);
   }
 }
-
-export async function getBuckets(req: Request, res: Response<Bucket[] | undefined>) {
-  try {
-
-    const data = await s3Client.send(new ListBucketsCommand());
-    const buckets = data.Buckets;
-
-    res.send(buckets);
-  } catch (error) {
-    console.log(error);
-    res.send(undefined);
-  }
-}
-
-
-
-
-
-
-

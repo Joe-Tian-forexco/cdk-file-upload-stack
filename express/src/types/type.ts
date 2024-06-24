@@ -19,3 +19,11 @@ export type DeleteParams = {
   fileName: string;
   extension: string;
 };
+
+export type GetObParams = {
+  userId: string;
+  category: PtxFileCategory;
+  fileName: string;
+  extension: string;
+};
+

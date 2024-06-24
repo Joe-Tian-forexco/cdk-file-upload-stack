@@ -56,7 +56,7 @@ export class LauncherStack extends Stack {
       functionName: lambdaName,
       runtime: Runtime.NODEJS_18_X,
       handler: "dist/lambda.handler",
-      code: Code.fromAsset(join(__dirname, "../../express/zip/Archive.zip")),
+      code: Code.fromAsset(join(__dirname, "../../express/zip/app.zip")),
       role: lambdaRole,
       memorySize: 128,
       environment: config,
